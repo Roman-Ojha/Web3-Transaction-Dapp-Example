@@ -91,11 +91,10 @@ const App = () => {
             }}
             value={state.receiverAddress}
           />
-          {/* <input
-            className="Amount_Of_Ether_Input_Field"
-            type="text"
-            placeholder="Amount of Ether"
-          /> */}
+          <div className="Amount_Of_Ether_Container">
+            <input type="text" placeholder="Amount of Wei" />
+            <p>{"<= 1Eth"}</p>
+          </div>
           <button
             className="Sender_Send_Button"
             type="submit"
