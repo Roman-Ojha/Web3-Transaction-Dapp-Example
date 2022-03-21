@@ -4,7 +4,9 @@ import Web3 from "web3";
 import Transaction from "./contracts/Transaction.json";
 
 const App = () => {
-  const [pageData, setPageData] = useState({
+  const [state, setState] = useState({
+    web3: null,
+    contract: null,
     senderBalance: 0,
     receiverBalance: 0,
     receiverAddress: "",
@@ -20,34 +22,46 @@ const App = () => {
       );
       const address = (await web3.eth.getAccounts())[1];
       const senderBalance = await contract.methods.getBalance(address).call();
-      setPageData({
-        ...pageData,
+      setState({
+        ...state,
+        web3: web3,
+        contract: contract,
         senderBalance: (senderBalance * 10 ** -18).toFixed(3),
       });
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   }, []);
   const sendTransaction = () => {
-    console.log(pageData.receiverAddress);
+    const isAddress = state.web3.utils.isAddress(state.receiverAddress);
+    if (isAddress) {
+    }
   };
   return (
     <>
       <div className="Page_Container">
         <div className="Sender_Container">
           <h1 className="Sender_Info_Text">Sender Info</h1>
-          <h2 className="Sender_Balance">{pageData.senderBalance}Eth</h2>
+          <h2 className="Sender_Balance">{state.senderBalance}Eth</h2>
           <h2 className="Send_Ether_Text">Send Ether</h2>
           <input
             type="text"
             placeholder="Receiver Address"
-            onChange={(e) => {
-              setPageData({
-                ...pageData,
+            onChange={async (e) => {
+              const isAddress = state.web3.utils.isAddress(e.target.value);
+              let receiverBalance;
+              if (isAddress) {
+                receiverBalance = await state.contract.methods
+                  .getBalance(e.target.value)
+                  .call();
+              } else {
+                receiverBalance = 0;
+              }
+              setState({
+                ...state,
                 receiverAddress: e.target.value,
+                receiverBalance,
               });
             }}
-            value={pageData.receiverAddress}
+            value={state.receiverAddress}
           />
           <button
             className="Sender_Send_Button"
