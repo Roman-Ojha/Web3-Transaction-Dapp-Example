@@ -48,6 +48,7 @@ body {
   border-width: 0px;
   background-color: rgb(52, 52, 177);
   color: white;
+  cursor: pointer;
 }
 .Sender_Send_Button {
   width: 150px;
