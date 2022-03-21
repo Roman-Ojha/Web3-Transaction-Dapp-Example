@@ -1,12 +1,23 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Web3 from "web3";
+import Transaction from "./contracts/Transaction.json";
 
 const App = () => {
-  useEffect(() => {
-    // const provider = new Web3.providers.HttpProvider("http://127.0.0.1:7545");
-    // const web3 = new Web3(provider);
-    // console.log(web3);
+  const [pageData, setPageData] = useState({});
+  useEffect(async () => {
+    try {
+      const web3 = new Web3("http://127.0.0.1:7545");
+      const id = await web3.eth.net.getId();
+      const deployedNetwork = Transaction.networks[id];
+      const contract = new web3.eth.Contract(
+        Transaction.abi,
+        deployedNetwork.address
+      );
+      const address = (await web3.eth.getAccounts())[0];
+      const senderBalance = await contract.methods.getBalance(address).call();
+      console.log(senderBalance);
+    } catch (err) {}
   }, []);
   return (
     <>
