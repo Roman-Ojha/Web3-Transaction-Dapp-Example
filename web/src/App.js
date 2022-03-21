@@ -8,31 +8,54 @@ const App = () => {
     web3: null,
     contract: null,
     senderBalance: 0,
+    senderAddress: "",
     receiverBalance: 0,
     receiverAddress: "",
   });
+  const updateBalance = async () => {
+    const senderBalance = await state.contract.methods
+      .getBalance(state.senderAddress)
+      .call();
+    const receiverBalance = await state.contract.methods
+      .getBalance(state.receiverAddress)
+      .call();
+    setState({
+      ...state,
+      senderBalance: (senderBalance * 10 ** -18).toFixed(3),
+      receiverBalance: (receiverBalance * 10 ** -18).toFixed(3),
+    });
+  };
   useEffect(async () => {
     try {
       const web3 = new Web3("http://127.0.0.1:7545");
       const id = await web3.eth.net.getId();
       const deployedNetwork = Transaction.networks[id];
-      const contract = new web3.eth.Contract(
-        Transaction.abi,
-        deployedNetwork.address
-      );
-      const address = (await web3.eth.getAccounts())[1];
-      const senderBalance = await contract.methods.getBalance(address).call();
+      const contractAddress = deployedNetwork.address;
+      const contract = new web3.eth.Contract(Transaction.abi, contractAddress);
+      const senderAddress = (await web3.eth.getAccounts())[1];
+      const senderBalance = await contract.methods
+        .getBalance(senderAddress)
+        .call();
       setState({
         ...state,
         web3: web3,
         contract: contract,
         senderBalance: (senderBalance * 10 ** -18).toFixed(3),
+        senderAddress,
       });
     } catch (err) {}
   }, []);
-  const sendTransaction = () => {
+  const sendTransaction = async () => {
     const isAddress = state.web3.utils.isAddress(state.receiverAddress);
     if (isAddress) {
+      await state.web3.eth.sendTransaction({
+        from: state.senderAddress,
+        to: state.receiverAddress,
+        value: "10000000000000000",
+      });
+      updateBalance();
+    } else {
+      window.alert("Address is Invalid");
     }
   };
   return (
@@ -47,22 +70,32 @@ const App = () => {
             placeholder="Receiver Address"
             onChange={async (e) => {
               const isAddress = state.web3.utils.isAddress(e.target.value);
-              let receiverBalance;
               if (isAddress) {
-                receiverBalance = await state.contract.methods
-                  .getBalance(e.target.value)
-                  .call();
+                setState({
+                  ...state,
+                  receiverAddress: e.target.value,
+                  receiverBalance: (
+                    (await state.contract.methods
+                      .getBalance(e.target.value)
+                      .call()) *
+                    10 ** -18
+                  ).toFixed(3),
+                });
               } else {
-                receiverBalance = 0;
+                setState({
+                  ...state,
+                  receiverAddress: e.target.value,
+                  receiverBalance: 0,
+                });
               }
-              setState({
-                ...state,
-                receiverAddress: e.target.value,
-                receiverBalance,
-              });
             }}
             value={state.receiverAddress}
           />
+          {/* <input
+            className="Amount_Of_Ether_Input_Field"
+            type="text"
+            placeholder="Amount of Ether"
+          /> */}
           <button
             className="Sender_Send_Button"
             type="submit"
@@ -70,13 +103,10 @@ const App = () => {
           >
             Send
           </button>
-          <button className="Sender_Refresh_Button" type="submit">
-            Refresh
-          </button>
         </div>
         <div className="Receiver_Container">
           <h1 className="Receiver_Info_Text">Receiver Info</h1>
-          <h2 className="Receiver_Balance">0Eth</h2>
+          <h2 className="Receiver_Balance">{state.receiverBalance}Eth</h2>
         </div>
       </div>
     </>
