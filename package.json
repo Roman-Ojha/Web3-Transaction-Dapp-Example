@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/Roman-Ojha/Web3-Transaction-Dapp-Example#readme",
   "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.4",
+    "dotenv": "^16.0.0",
     "path": "^0.12.7"
   }
 }
