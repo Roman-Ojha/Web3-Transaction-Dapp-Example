@@ -11,6 +11,7 @@ const App = () => {
     senderAddress: "",
     receiverBalance: 0,
     receiverAddress: "",
+    amount: "",
   });
   const updateBalance = async () => {
     const senderBalance = await state.contract.methods
@@ -46,16 +47,25 @@ const App = () => {
     } catch (err) {}
   }, []);
   const sendTransaction = async () => {
-    const isAddress = state.web3.utils.isAddress(state.receiverAddress);
-    if (isAddress) {
-      await state.web3.eth.sendTransaction({
-        from: state.senderAddress,
-        to: state.receiverAddress,
-        value: "10000000000000000",
-      });
-      updateBalance();
-    } else {
-      window.alert("Address is Invalid");
+    try {
+      const isAddress = state.web3.utils.isAddress(state.receiverAddress);
+      const amount = state.amount;
+      if (!parseInt(amount)) {
+        window.alert("Please enter Number");
+      } else {
+        if (isAddress) {
+          await state.web3.eth.sendTransaction({
+            from: state.senderAddress,
+            to: state.receiverAddress,
+            value: amount,
+          });
+          updateBalance();
+        } else {
+          window.alert("Address is Invalid");
+        }
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
   return (
@@ -92,8 +102,18 @@ const App = () => {
             value={state.receiverAddress}
           />
           <div className="Amount_Of_Ether_Container">
-            <input type="text" placeholder="Amount of Wei" />
-            <p>{"<= 1Eth"}</p>
+            <input
+              type="text"
+              placeholder="Amount in Wei"
+              value={state.amount}
+              onChange={(e) => {
+                setState({
+                  ...state,
+                  amount: e.target.value,
+                });
+              }}
+            />
+            <p>{"< = 1Eth"}</p>
           </div>
           <button
             className="Sender_Send_Button"
