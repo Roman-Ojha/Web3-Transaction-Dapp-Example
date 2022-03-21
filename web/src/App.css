@@ -1,0 +1,70 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  color: white;
+  font-family: "Courier New", Courier, monospace;
+}
+.Page_Container {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  background-color: #03203c;
+}
+.Sender_Container {
+  height: 70vh;
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  border-radius: 15px;
+  background-color: #636166;
+}
+.Sender_Info_Text {
+}
+.Sender_Balance {
+}
+.Send_Ether_Text {
+}
+.Sender_Container input {
+  width: 85%;
+  height: 40px;
+  border-radius: 5px;
+  border-width: 0px;
+}
+.Sender_Container input:read-write {
+  font-size: 20px;
+  padding-left: 10px;
+}
+.Sender_Container input:focus {
+  outline: none;
+}
+.Sender_Container button {
+  height: 50px;
+  border-radius: 10px;
+  border-width: 0px;
+  background-color: rgb(52, 52, 177);
+  color: white;
+}
+.Sender_Send_Button {
+  width: 150px;
+}
+.Sender_Refresh_Button {
+  width: 100px;
+}
+.Receiver_Container {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  border-radius: 15px;
+  background-color: #636166;
+}
+.Receiver_Info_Text {
+}
+.Receiver_Balance {
+}
