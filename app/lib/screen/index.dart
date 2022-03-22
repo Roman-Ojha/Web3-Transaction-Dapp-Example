@@ -14,14 +14,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   double _senderBalance = 0;
-  double receiverBalance = 0;
+  double _receiverBalance = 0;
   final String _senderAddress = "0x156b6c9D84118E80D70f0AEe5FA8Cb58c76956FC";
+  // ganache sender address
   final String _receiverAddress = "0x95B6C683A3a7DBD9bee9D47f01FB7f6f6155AdB9";
+  // ganache receiver address
 
   final String _rpcUrl = "http://192.168.10.101:7545";
   final String _wsUrl = "http://192.168.10.101:7545";
   final String _privateKey =
       "640322cb2cf80ce96c34ba2e3dbd3c2e6cc593b926974242e5ee3393708b0056";
+  // ganache sender privatekey
 
   late Web3Client _web3;
   late String _abiCode;
@@ -46,24 +49,34 @@ class _HomeScreenState extends State<HomeScreen> {
     await getDeployedContract();
     await getCredentials();
     BigInt senderBalance = await getBalance(_senderAddress);
+    BigInt receiverBalance = await getBalance(_receiverAddress);
     setState(() {
       _senderBalance = (senderBalance / BigInt.from(1000000000000000000));
+      _receiverBalance = (receiverBalance / BigInt.from(1000000000000000000));
     });
   }
 
   Future<void> getAbi() async {
-    String abiStringFile =
-        await rootBundle.loadString("src/contracts/Transaction.json");
-    var jsonAbi = jsonDecode(abiStringFile);
-    _abiCode = jsonEncode(jsonAbi["abi"]);
-    _contractAddress =
-        EthereumAddress.fromHex(jsonAbi["networks"]["5777"]["address"]);
+    try {
+      String abiStringFile =
+          await rootBundle.loadString("src/contracts/Transaction.json");
+      var jsonAbi = jsonDecode(abiStringFile);
+      _abiCode = jsonEncode(jsonAbi["abi"]);
+      _contractAddress =
+          EthereumAddress.fromHex(jsonAbi["networks"]["5777"]["address"]);
+    } catch (err) {
+      //
+    }
   }
 
   Future<void> getDeployedContract() async {
-    _contract = DeployedContract(
-        ContractAbi.fromJson(_abiCode, "Transaction"), _contractAddress);
-    _getBalance = _contract.function("getBalance");
+    try {
+      _contract = DeployedContract(
+          ContractAbi.fromJson(_abiCode, "Transaction"), _contractAddress);
+      _getBalance = _contract.function("getBalance");
+    } catch (err) {
+      //
+    }
   }
 
   Future<BigInt> getBalance(String address) async {
@@ -82,8 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getCredentials() async {
-    _credentials = await EthPrivateKey.fromHex(_privateKey);
-    _ownAddress = await _credentials.extractAddress();
+    try {
+      _credentials = await EthPrivateKey.fromHex(_privateKey);
+      _ownAddress = await _credentials.extractAddress();
+    } catch (err) {}
   }
 
   Future<void> sendTransaction(
@@ -101,6 +116,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> updateBalance() async {
+    try {
+      BigInt senderBalance = await getBalance(_senderAddress);
+      BigInt receiverBalance = await getBalance(_receiverAddress);
+      setState(() {
+        _senderBalance = (senderBalance / BigInt.from(1000000000000000000));
+        _receiverBalance = (receiverBalance / BigInt.from(1000000000000000000));
+      });
+    } catch (err) {
+      //
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           children: [
             const SizedBox(
-              height: 30.0,
+              height: 40.0,
             ),
             Container(
               margin: const EdgeInsets.only(
@@ -181,12 +209,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       await sendTransaction(
                           address: "0x95B6C683A3a7DBD9bee9D47f01FB7f6f6155AdB9",
                           amount: 100000000000000000);
+                      await updateBalance();
                     },
                     child: const Text(
                       "Send",
                       style: TextStyle(
                         color: Colors.white,
                       ),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(52, 52, 177, 1),
                     ),
                   ),
                 ],
@@ -209,8 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     "Receiver Info",
                     style: TextStyle(
                       fontSize: 20.0,
@@ -218,8 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Text(
-                    "0 Eth",
-                    style: TextStyle(
+                    "${_receiverBalance} Eth",
+                    style: const TextStyle(
                       fontSize: 15.0,
                       color: Colors.white,
                     ),
