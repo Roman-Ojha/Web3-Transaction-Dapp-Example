@@ -15,15 +15,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double _senderBalance = 0;
   double receiverBalance = 0;
+  final String _senderAddress = "0x156b6c9D84118E80D70f0AEe5FA8Cb58c76956FC";
+  final String _receiverAddress = "0x95B6C683A3a7DBD9bee9D47f01FB7f6f6155AdB9";
 
   final String _rpcUrl = "http://192.168.10.101:7545";
   final String _wsUrl = "http://192.168.10.101:7545";
+  final String _privateKey =
+      "fdf9566dad955afd2ac5f11ca03b23ed0e747204a4f953cbb03c67c7e48d4d19";
 
   late Web3Client _web3;
   late String _abiCode;
   late EthereumAddress _contractAddress;
   late EthereumAddress _ownAddress;
   late DeployedContract _contract;
+  late Credentials _credentials;
 
   late ContractFunction _getBalance;
 
@@ -39,8 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     await getAbi();
     await getDeployedContract();
-    BigInt senderBalance =
-        await getBalance("0x156b6c9D84118E80D70f0AEe5FA8Cb58c76956FC");
+    await getCredentials();
+    BigInt senderBalance = await getBalance(_senderAddress);
     setState(() {
       _senderBalance = (senderBalance / BigInt.from(1000000000000000000));
     });
@@ -74,6 +79,26 @@ class _HomeScreenState extends State<HomeScreen> {
       // print(err);
     }
     return balance;
+  }
+
+  Future<void> getCredentials() async {
+    _credentials = await EthPrivateKey.fromHex(_privateKey);
+    _ownAddress = await _credentials.extractAddress();
+  }
+
+  Future<void> sendTransaction(
+      {required String address, required int amount}) async {
+    try {
+      EtherAmount _amount = EtherAmount.fromUnitAndValue(EtherUnit.wei, 100);
+      Transaction transaction = Transaction(
+        from: EthereumAddress.fromHex(_senderAddress),
+        to: EthereumAddress.fromHex(_receiverAddress),
+        value: _amount,
+      );
+      await _web3.sendTransaction(_credentials, transaction);
+    } catch (err) {
+      print(err);
+    }
   }
 
   @override
@@ -152,7 +177,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      await sendTransaction(
+                          address: "0x95B6C683A3a7DBD9bee9D47f01FB7f6f6155AdB9",
+                          amount: 100000000000000000);
+                    },
                     child: const Text(
                       "Send",
                       style: TextStyle(
