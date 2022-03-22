@@ -1,4 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:http/http.dart';
+import 'package:web_socket_channel/io.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -8,6 +13,48 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final String _rpcUrl = "http://192.168.10.101:7545";
+  final String _wsUrl = "http://192.168.10.101:7545";
+
+  late Web3Client _web3;
+  late String _abiCode;
+  late EthereumAddress _contractAddress;
+  late EthereumAddress _ownAddress;
+  late DeployedContract _contract;
+
+  @override
+  void initState() {
+    super.initState();
+    initialSetup();
+  }
+
+  Future<void> initialSetup() async {
+    _web3 = Web3Client(_rpcUrl, Client(), socketConnector: () {
+      return IOWebSocketChannel.connect(_wsUrl).cast<String>();
+    });
+    getAbi();
+  }
+
+  Future<void> getAbi() async {
+    String abiStringFile =
+        await rootBundle.loadString("src/contracts/Transaction.json");
+    var jsonAbi = jsonDecode(abiStringFile);
+    _abiCode = jsonEncode(jsonAbi["abi"]);
+    _contractAddress =
+        EthereumAddress.fromHex(jsonAbi["networks"]["5777"]["address"]);
+  }
+
+  Future<void> getDeployedContract() async {
+    _contract = DeployedContract(
+        ContractAbi.fromJson(_abiCode, "Transaction"), _contractAddress);
+  }
+
+  Future<int> getBalance() async {
+    final balance = _contract.function("getBalance");
+    print(balance);
+    return 5;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
