@@ -22,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late EthereumAddress _ownAddress;
   late DeployedContract _contract;
 
+  late ContractFunction _getBalance;
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _web3 = Web3Client(_rpcUrl, Client(), socketConnector: () {
       return IOWebSocketChannel.connect(_wsUrl).cast<String>();
     });
-    getAbi();
+    await getAbi();
+    await getDeployedContract();
+    await getBalance("0x156b6c9D84118E80D70f0AEe5FA8Cb58c76956FC");
   }
 
   Future<void> getAbi() async {
@@ -47,11 +51,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> getDeployedContract() async {
     _contract = DeployedContract(
         ContractAbi.fromJson(_abiCode, "Transaction"), _contractAddress);
+    _getBalance = _contract.function("getBalance");
   }
 
-  Future<int> getBalance() async {
-    final balance = _contract.function("getBalance");
-    print(balance);
+  Future<int> getBalance(String address) async {
+    try {
+      EthereumAddress _address = EthereumAddress.fromHex(address);
+      // print(address);
+      List<dynamic> balance = await _web3
+          .call(contract: _contract, function: _getBalance, params: [_address]);
+      print(balance);
+      // print(address);
+    } catch (err) {
+      print(err);
+    }
     return 5;
   }
 
