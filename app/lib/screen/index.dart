@@ -13,6 +13,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  double _senderBalance = 0;
+  double receiverBalance = 0;
+
   final String _rpcUrl = "http://192.168.10.101:7545";
   final String _wsUrl = "http://192.168.10.101:7545";
 
@@ -36,7 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     await getAbi();
     await getDeployedContract();
-    await getBalance("0x156b6c9D84118E80D70f0AEe5FA8Cb58c76956FC");
+    BigInt senderBalance =
+        await getBalance("0x156b6c9D84118E80D70f0AEe5FA8Cb58c76956FC");
+    setState(() {
+      _senderBalance = (senderBalance / BigInt.from(1000000000000000000));
+    });
   }
 
   Future<void> getAbi() async {
@@ -54,18 +61,19 @@ class _HomeScreenState extends State<HomeScreen> {
     _getBalance = _contract.function("getBalance");
   }
 
-  Future<int> getBalance(String address) async {
+  Future<BigInt> getBalance(String address) async {
+    BigInt balance = BigInt.from(0);
     try {
       EthereumAddress _address = EthereumAddress.fromHex(address);
       // print(address);
-      List<dynamic> balance = await _web3
+      List<dynamic> balanceList = await _web3
           .call(contract: _contract, function: _getBalance, params: [_address]);
-      print(balance);
-      // print(address);
+
+      balance = balanceList[0];
     } catch (err) {
-      print(err);
+      // print(err);
     }
-    return 5;
+    return balance;
   }
 
   @override
@@ -101,9 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     "Sender Info",
                     style: TextStyle(fontSize: 20.0, color: Colors.white),
                   ),
-                  const Text(
-                    "0 Eth",
-                    style: TextStyle(fontSize: 15.0, color: Colors.white),
+                  Text(
+                    "${_senderBalance} Eth",
+                    style: const TextStyle(fontSize: 15.0, color: Colors.white),
                   ),
                   const Text(
                     "Send Ether",
