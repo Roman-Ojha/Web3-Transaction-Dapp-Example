@@ -113,7 +113,7 @@ const App = () => {
                 });
               }}
             />
-            <p>{"< = 1Eth"}</p>
+            <p>{"< = 1 Eth"}</p>
           </div>
           <button
             className="Sender_Send_Button"
@@ -125,7 +125,7 @@ const App = () => {
         </div>
         <div className="Receiver_Container">
           <h1 className="Receiver_Info_Text">Receiver Info</h1>
-          <h2 className="Receiver_Balance">{state.receiverBalance}Eth</h2>
+          <h2 className="Receiver_Balance">{state.receiverBalance} Eth</h2>
         </div>
       </div>
     </>

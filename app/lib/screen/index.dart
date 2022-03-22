@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final String _rpcUrl = "http://192.168.10.101:7545";
   final String _wsUrl = "http://192.168.10.101:7545";
   final String _privateKey =
-      "fdf9566dad955afd2ac5f11ca03b23ed0e747204a4f953cbb03c67c7e48d4d19";
+      "640322cb2cf80ce96c34ba2e3dbd3c2e6cc593b926974242e5ee3393708b0056";
 
   late Web3Client _web3;
   late String _abiCode;
@@ -89,15 +89,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> sendTransaction(
       {required String address, required int amount}) async {
     try {
-      EtherAmount _amount = EtherAmount.fromUnitAndValue(EtherUnit.wei, 100);
+      EtherAmount _amount = EtherAmount.fromUnitAndValue(EtherUnit.wei, amount);
       Transaction transaction = Transaction(
         from: EthereumAddress.fromHex(_senderAddress),
         to: EthereumAddress.fromHex(_receiverAddress),
         value: _amount,
       );
-      await _web3.sendTransaction(_credentials, transaction);
+      var res = await _web3.sendTransaction(_credentials, transaction);
     } catch (err) {
-      print(err);
+      // print(err);
     }
   }
 

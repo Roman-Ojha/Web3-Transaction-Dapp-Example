@@ -16,6 +16,7 @@ module.exports = {
       // private key the key of one account from ganache
       // here we are providing the provider while deploying the smart contract
       network_id: "*",
+      // network_id: "5777",
     },
   },
   mocha: {},
